@@ -34,6 +34,7 @@ class Deck:
             i = random.randint(0, n)
             j = random.randint(0, n)
             self.cards[i], self.cards[j] = self.cards[j], self.cards[i]
+        print("It's the popular game called Exploding Kitten, written in Python.\n")
         print('The deck has been shuffled')
 
     def addCard(self, cardtype, num = 1):
@@ -110,7 +111,6 @@ class Game:
 
 
     def gameStart(self):
-        print("It's the popular game called Exploding Kitten, written in Python.\n")
 
         intro = input("Enter names (2-5 players) separated by comma (, ): ")
         #intro = 'évi, gergő, béla'
