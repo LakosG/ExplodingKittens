@@ -4,6 +4,7 @@ import random
 class Deck:
     def __init__(self):
         self.cards = []
+        self.positionInDeck = 0
         self.build()
         self.shuffle()
 
@@ -61,6 +62,7 @@ class Player:
         self.hand = ['Defuse']
         type(self).numOfPlayer += 1
         self.attacked = 0
+        self.action = ''
 
     def __del__(self):
         type(self).numOfPlayer -= 1
@@ -133,6 +135,12 @@ class Game:
         self.createPlayers()
         print(self.deck)
 
+    def turnCounterStep(self):
+        if self.players[self.turnCounter].attacked == 0:
+            self.turnCounter += 1
+        else:
+            self.players[self.turnCounter].attacked = 0
+
     def attack(self):
         self.turnCounter += 1
         if self.turnCounter > (len(self.players) - 1):
@@ -142,15 +150,35 @@ class Game:
 
     def skip(self):
         print('\nTurn has been skipped!')
-        if self.players[self.turnCounter].attacked == 0:
-            self.turnCounter += 1
-        else:
-            self.players[self.turnCounter].attacked = 0
+        self.turnCounterStep()
 
     def favor(self):
         favorGiver = input('Name a player who give you a favor: ')
         cardToFavor = input('{}! do a favor for {}, please!\nName a card from your hand:{}: '.format(favorGiver, self.players[self.turnCounter].name, self.players[[x.name for x in self.players].index(favorGiver)].hand))
         self.players[[x.name for x in self.players].index(favorGiver)].giveOneCardToAnotherPlayer(self.players[self.turnCounter], cardToFavor)
+
+    def nopeAction(self):
+        whoNope = input('Anybody to Nope this action? Type a name or hit Enter: ')
+        if whoNope in [self.players[_].name for _ in range(len(self.players))] and 'Nope' in self.players[
+            [x.name for x in self.players].index(whoNope)].hand:
+            self.players[[_.name for _ in self.players].index(whoNope)].playCard(self.trash, 'Nope')
+            # Nope to Nope is not working
+        else:
+            print('Nobody played Nope.') if whoNope == '' else print('{} has no Nope to play'.format(whoNope))
+
+    def defuseBomb(self):
+        print("Exploding kitten!\n{} Defused the bomb!".format(self.players[self.turnCounter].name))
+        self.players[self.turnCounter].playCard(self.trash, 'Defuse')
+        self.deck.positionInDeck = int(
+            input('Where do you want to take the card? (0 = top of the deck / {} = last card): '.format(
+                len(self.deck.cards))) or '0')
+        # self.deck.positionInDeck = 0
+        self.players[self.turnCounter].takeBackCardToTheDeck(self.deck, 'Exploding kitten',
+                                                             self.deck.positionInDeck)
+    def explodePlayer(self):
+        print("Exploding kitten! - BOOM!\n{} exploded".format(self.players[self.turnCounter].name))
+        del self.players[self.turnCounter]
+        self.turnCounter += 1
 
     def turnCircle(self):
         while len(self.players) > 1:
@@ -158,61 +186,52 @@ class Game:
                 self.turnCounter = 0
             print("\nIt's {}'s turn!".format(self.players[self.turnCounter].name))
             print(self.players[self.turnCounter])
-            while True:
-                action = input("Play a card by name or end your turn with Enter: ")
-                #action = ''
-                if action == '':
-                    self.players[self.turnCounter].drawCard(self.deck)
-                    print("{} drawed a card.".format(self.players[self.turnCounter].name))
-                    if self.players[self.turnCounter].hand[-1] == 'Exploding kitten' and 'Defuse' in self.players[self.turnCounter].hand:
-                        print("Exploding kitten!\n{} Defused the bomb!".format(self.players[self.turnCounter].name))
-                        self.players[self.turnCounter].playCard(self.trash, 'Defuse')
-                        deckindex = int(input('Where do you want to take the card? (0 = top of the deck / {} = last card): '.format(len(self.deck.cards))) or '0')
-                        #deckindex = 0
-                        self.players[self.turnCounter].takeBackCardToTheDeck(self.deck, 'Exploding kitten', deckindex)
-                    elif self.players[self.turnCounter].hand[-1] == 'Exploding kitten' and 'Defuse' not in self.players[self.turnCounter].hand:
-                        print("Exploding kitten! - BOOM!\n{} exploded".format(self.players[self.turnCounter].name))
-                        del self.players[self.turnCounter]
-                        self.turnCounter += 1
-                        break
-                    print(self.players[self.turnCounter])
-                    print('\nTurn has ended!')
-                    if self.players[self.turnCounter].attacked == 0:
-                        self.turnCounter += 1
-                    else:
-                        self.players[self.turnCounter].attacked = 0
-                    break
-                elif action in self.players[self.turnCounter].hand:
-                    self.players[self.turnCounter].playCard(self.trash, action)
-                    whoNope = input('Anybody to Nope this action? Type a name or hit Enter: ')
-                    if whoNope in [self.players[_].name for _ in range(len(self.players))] and 'Nope' in self.players[[x.name for x in self.players].index(whoNope)].hand:
-                        self.players[[_.name for _ in self.players].index(whoNope)].playCard(self.trash, 'Nope')
-                        #Nope to Nope is not working
-                    else:
-                        print('Nobody played Nope.') if whoNope == '' else print('{} has no Nope to play'.format(whoNope))
-                        if action == 'Attack':
-                            self.attack()
-                            break
-                        elif action == 'Skip':
-                            self.skip()
-                            break
-                        elif action == 'Favor':
-                            self.favor()
-                        elif action == 'Shuffle':
-                            self.deck.shuffle()
-                        elif action == 'See the future':
-                            print('The next 3 card will be:\n{}\n{}\n{}'.format(self.deck.cards[0], self.deck.cards[1], self.deck.cards[2]))
-                        elif action == 'Nope':
-                            print('Nothing to {}, sorry!'.format(action)) #Nope to nope is not working
-                        elif action == 'Defuse':
-                            print('Nothing to {}, sorry!'.format(action))
-                        #elif action == 'Collectable1':
-                            #favorGiver = input('Name a player who give you a favor: ')
-                            #cardToFavor = input('{}! do a favor for {}, please!\nName a card from your hand:{}: '.format(favorGiver, self.players[self.turnCounter].name, self.players[[x.name for x in self.players].index(favorGiver)].hand))
-                            #self.players[[x.name for x in self.players].index(favorGiver)].giveOneCardToAnotherPlayer(self.players[self.turnCounter], cardToFavor)
-                else:
-                    print('No card like this!')
+            self.playerTurn()
         print("\n{} won the game!\nCongratulations!".format(self.players[0].name))
+
+    def playerTurn(self):
+       while True:
+            self.players[self.turnCounter].action = input("Play a card by name or end your turn with Enter: ")
+            if self.players[self.turnCounter].action == '': #end the turn by Enter
+                self.players[self.turnCounter].drawCard(self.deck)
+                print("{} drawn a card.".format(self.players[self.turnCounter].name))
+                if self.players[self.turnCounter].hand[-1] == 'Exploding kitten' and 'Defuse' in self.players[self.turnCounter].hand:
+                    self.defuseBomb()
+                elif self.players[self.turnCounter].hand[-1] == 'Exploding kitten' and 'Defuse' not in self.players[
+                    self.turnCounter].hand:
+                    self.explodePlayer()
+                    break
+                print(self.players[self.turnCounter])
+                print('\nTurn has ended!')
+                self.turnCounterStep()
+                break
+            elif self.players[self.turnCounter].action in self.players[self.turnCounter].hand:
+                self.players[self.turnCounter].playCard(self.trash, self.players[self.turnCounter].action)
+                self.nopeAction()
+                if self.players[self.turnCounter].action == 'Attack':
+                    self.attack()
+                    break
+                elif self.players[self.turnCounter].action == 'Skip':
+                    self.skip()
+                    break
+                elif self.players[self.turnCounter].action == 'Favor':
+                    self.favor()
+                elif self.players[self.turnCounter].action == 'Shuffle':
+                    self.deck.shuffle()
+                elif self.players[self.turnCounter].action == 'See the future':
+                    print('The next 3 card will be:\n{}\n{}\n{}'.format(self.deck.cards[0], self.deck.cards[1],
+                                                                            self.deck.cards[2]))
+                elif self.players[self.turnCounter].action == 'Nope':
+                    print('Nothing to {}, sorry!'.format(self.players[self.turnCounter].action))  # Nope to nope is not working
+                elif self.players[self.turnCounter].action == 'Defuse':
+                    print('Nothing to {}, sorry!'.format(self.players[self.turnCounter].action))
+
+                    # elif self.players[self.turnCounter].action == 'Collectable1':
+                        # favorGiver = input('Name a player who give you a favor: ')
+                        # cardToFavor = input('{}! do a favor for {}, please!\nName a card from your hand:{}: '.format(favorGiver, self.players[self.turnCounter].name, self.players[[x.name for x in self.players].index(favorGiver)].hand))
+                        # self.players[[x.name for x in self.players].index(favorGiver)].giveOneCardToAnotherPlayer(self.players[self.turnCounter], cardToFavor)
+            else:
+                print('No card like this!')
 
 #---
 
