@@ -104,91 +104,92 @@ class Game:
     def __init__(self):
         self.deck = Deck()
         self.trash = Trash()
+        self.numOfPlayers = 0
+        self.playersNames = ''
+        self.players = []
 
     def createPlayers(self):
-        pass
-        pass
-
-
-    def gameStart(self):
-
         intro = input("Enter names (2-5 players) separated by comma (, ): ")
-        #intro = 'évi, gergő, béla'
-        playersNames = intro.split(', ')
-        numOfPlayers = len(playersNames)
-        assert numOfPlayers > 1 and numOfPlayers < 6, "Please add min. 2 players and max. 5. You added {} player".format(numOfPlayers)
+        # intro = 'évi, gergő, béla'
+        self.playersNames = intro.split(', ')
+        self.numOfPlayers = len(self.playersNames)
+        assert self.numOfPlayers > 1 and self.numOfPlayers < 6, "Please add min. 2 players and max. 5. You added {} player".format(
+            self.numOfPlayers)
 
-        players = [Player(i) for i in playersNames]
+        self.players = [Player(i) for i in self.playersNames]
 
-        for key, value in enumerate(players):
-            players[key].drawCard(self.deck, 4)
+        for key, value in enumerate(self.players):
+            self.players[key].drawCard(self.deck, 4)
 
         self.deck.addCard('Exploding kitten', Player.numOfPlayer - 1)
         self.deck.addCard('Defuse', 1)
 
-        for key, value in enumerate(players):
-            players[key].shuffleHand()
-            print(players[key])
+        for key, value in enumerate(self.players):
+            self.players[key].shuffleHand()
+            print(self.players[key])
 
+    def gameStart(self):
+
+        self.createPlayers()
         print(self.deck)
 
         c = 0
-        while len(players) > 1:
-            if c > (len(players) - 1):
+        while len(self.players) > 1:
+            if c > (len(self.players) - 1):
                 c = 0
-            print("\nIt's {}'s turn!".format(players[c].name))
-            print(players[c])
+            print("\nIt's {}'s turn!".format(self.players[c].name))
+            print(self.players[c])
             while True:
                 action = input("Play a card by name or end your turn with Enter: ")
                 #action = ''
                 if action == '':
-                    players[c].drawCard(self.deck)
-                    print("{} drawed a card.".format(players[c].name))
-                    if players[c].hand[-1] == 'Exploding kitten' and 'Defuse' in players[c].hand:
-                        print("Exploding kitten!\n{} Defused the bomb!".format(players[c].name))
-                        players[c].playCard(self.trash, 'Defuse')
+                    self.players[c].drawCard(self.deck)
+                    print("{} drawed a card.".format(self.players[c].name))
+                    if self.players[c].hand[-1] == 'Exploding kitten' and 'Defuse' in self.players[c].hand:
+                        print("Exploding kitten!\n{} Defused the bomb!".format(self.players[c].name))
+                        self.players[c].playCard(self.trash, 'Defuse')
                         deckindex = int(input('Where do you want to take the card? (0 = top of the deck / {} = last card): '.format(len(self.deck.cards))) or '0')
                         #deckindex = 0
-                        players[c].takeBackCardToTheDeck(self.deck, 'Exploding kitten', deckindex)
-                    elif players[c].hand[-1] == 'Exploding kitten' and 'Defuse' not in players[c].hand:
-                        print("Exploding kitten! - BOOM!\n{} exploded".format(players[c].name))
-                        del players[c]
+                        self.players[c].takeBackCardToTheDeck(self.deck, 'Exploding kitten', deckindex)
+                    elif self.players[c].hand[-1] == 'Exploding kitten' and 'Defuse' not in self.players[c].hand:
+                        print("Exploding kitten! - BOOM!\n{} exploded".format(self.players[c].name))
+                        del self.players[c]
                         c += 1
                         break
-                    print(players[c])
+                    print(self.players[c])
                     print('\nTurn has ended!')
-                    if players[c].attacked == 0:
+                    if self.players[c].attacked == 0:
                         c += 1
                     else:
-                        players[c].attacked = 0
+                        self.players[c].attacked = 0
                     break
-                elif action in players[c].hand:
-                    players[c].playCard(self.trash, action)
+                elif action in self.players[c].hand:
+                    self.players[c].playCard(self.trash, action)
                     whoNope = input('Anybody to Nope this action? Type a name or hit Enter: ')
-                    if whoNope in [players[_].name for _ in range(len(players))] and 'Nope' in players[[x.name for x in players].index(whoNope)].hand:
-                        players[[_.name for _ in players].index(whoNope)].playCard(self.trash, 'Nope')
+                    if whoNope in [self.players[_].name for _ in range(len(self.players))] and 'Nope' in self.players[[x.name for x in self.players].index(whoNope)].hand:
+                        self.players[[_.name for _ in self.players].index(whoNope)].playCard(self.trash, 'Nope')
                         #ide kell még, hogy lehessen Nope-olni a Nope-ot
                     else:
                         print('Nobody played Nope.') if whoNope == '' else print('{} has no Nope to play'.format(whoNope))
 
                         if action == 'Attack':
                             c += 1
-                            if c > (len(players) - 1):
+                            if c > (len(self.players) - 1):
                                 c = 0
-                            print('Turn has been skipped!\n{} has been attacked.(2 turns)'.format(players[c].name))
-                            players[c].attacked = 1
+                            print('Turn has been skipped!\n{} has been attacked.(2 turns)'.format(self.players[c].name))
+                            self.players[c].attacked = 1
                             break
                         elif action == 'Skip':
                             print('\nTurn has been skipped!')
-                            if players[c].attacked == 0:
+                            if self.players[c].attacked == 0:
                                 c += 1
                             else:
-                                players[c].attacked = 0
+                                self.players[c].attacked = 0
                             break
                         elif action == 'Favor':
                             favorGiver = input('Name a player who give you a favor: ')
-                            cardToFavor = input('{}! do a favor for {}, please!\nName a card from your hand:{}: '.format(favorGiver, players[c].name, players[[x.name for x in players].index(favorGiver)].hand))
-                            players[[x.name for x in players].index(favorGiver)].giveOneCardToAnotherPlayer(players[c], cardToFavor)
+                            cardToFavor = input('{}! do a favor for {}, please!\nName a card from your hand:{}: '.format(favorGiver, self.players[c].name, self.players[[x.name for x in self.players].index(favorGiver)].hand))
+                            self.players[[x.name for x in self.players].index(favorGiver)].giveOneCardToAnotherPlayer(self.players[c], cardToFavor)
                         elif action == 'Shuffle':
                             self.deck.shuffle()
                         elif action == 'See the future':
@@ -199,11 +200,11 @@ class Game:
                             print('Nothing to {}, sorry!'.format(action))
                         #elif action == 'Collectable1':
                             #favorGiver = input('Name a player who give you a favor: ')
-                            #cardToFavor = input('{}! do a favor for {}, please!\nName a card from your hand:{}: '.format(favorGiver, players[c].name, players[[x.name for x in players].index(favorGiver)].hand))
-                            #players[[x.name for x in players].index(favorGiver)].giveOneCardToAnotherPlayer(players[c], cardToFavor)
+                            #cardToFavor = input('{}! do a favor for {}, please!\nName a card from your hand:{}: '.format(favorGiver, self.players[c].name, self.players[[x.name for x in self.players].index(favorGiver)].hand))
+                            #self.players[[x.name for x in self.players].index(favorGiver)].giveOneCardToAnotherPlayer(self.players[c], cardToFavor)
                 else:
                     print('No card like this!')
-        print("\n{} won the game!\nCongratulations!".format(players[0].name))
+        print("\n{} won the game!\nCongratulations!".format(self.players[0].name))
 
 #---
 
