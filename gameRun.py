@@ -63,6 +63,48 @@ class Card:
     TYPE_COLLECTABLE4 = "Collectable4"
     TYPE_COLLECTABLE5 = "Collectable5"
 
+    def isExplodingKitten(self):
+        return self.isCardType(Card.TYPE_EXPLODING_KITTEN)
+
+    def isSkip(self):
+        return self.isCardType(Card.TYPE_SKIP)
+
+    def isAttack(self):
+        return self.isCardType(Card.TYPE_ATTACK)
+
+    def isFavor(self):
+        return self.isCardType(Card.TYPE_FAVOR)
+
+    def isShuffle(self):
+        return self.isCardType(Card.TYPE_SHUFFLE)
+
+    def isNope(self):
+        return self.isCardType(Card.TYPE_NOPE)
+
+    def isSeeTheFuture(self):
+        return self.isCardType(Card.TYPE_SEE_THE_FUTURE)
+
+    def isDefuse(self):
+        return self.isCardType(Card.TYPE_DEFUSE)
+
+    def isCollectable1(self):
+        return self.isCardType(Card.TYPE_COLLECTABLE1)
+
+    def isCollectable2(self):
+        return self.isCardType(Card.TYPE_COLLECTABLE2)
+
+    def isCollectable3(self):
+        return self.isCardType(Card.TYPE_COLLECTABLE3)
+
+    def isCollectable4(self):
+        return self.isCardType(Card.TYPE_COLLECTABLE4)
+
+    def isCollectable5(self):
+        return self.isCardType(Card.TYPE_COLLECTABLE5)
+
+    def isCardType(self, cardType):
+        return self.cardType == cardType
+
     def __init__(self, cardType):
         self.cardType = cardType
 
@@ -182,7 +224,7 @@ class Game:
 
     def defuseBomb(self):
         print("Exploding kitten!\n{} Defused the bomb!".format(self.players[self.turnCounter].name))
-        self.players[self.turnCounter].playCard(self.trash, 'Defuse')
+        self.players[self.turnCounter].playCard(self.trash, Card.TYPE_DEFUSE)
         self.deck.positionInDeck = int(
             input('Where do you want to take the card? (0 = top of the deck / {} = last card): '.format(
                 len(self.deck.cards))) or '0')
